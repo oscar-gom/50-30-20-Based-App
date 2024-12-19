@@ -16,6 +16,6 @@ data class Movement(
     val date: LocalDate,
     val type: MovementType,
     val category: Category,
-    val creationTime: LocalDateTime,
-    val modificationTime: LocalDateTime
+    val creationTime: LocalDateTime = LocalDateTime.now(),
+    val modificationTime: LocalDateTime = LocalDateTime.now()
 )
