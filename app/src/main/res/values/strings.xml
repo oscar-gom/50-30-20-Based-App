@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">SavingsApp</string>
+    <string name="labelDescriptionTF">Description</string>
+    <string name="hintDescriptionTF">Add your description</string>
+    <string name="labelAmountTF">Amount</string>
+    <string name="hintAmountTF">"Add your amount "</string>
 </resources>
