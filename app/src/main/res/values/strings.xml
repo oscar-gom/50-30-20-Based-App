@@ -5,7 +5,9 @@
     <string name="labelAmountTF">Amount</string>
     <string name="hintAmountTF">"Add your amount "</string>
     <string name="labelDateTF">Select date</string>
-    <string name="labelAccept">Ok</string>
+    <string name="labelAccept">OK</string>
     <string name="labelCancel">Cancel</string>
     <string name="labelSelectDate">Select Date</string>
+    <string name="labelIncome">Ingreso</string>
+    <string name="labelExpense">Expense</string>
 </resources>

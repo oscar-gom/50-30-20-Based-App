@@ -1,14 +1,13 @@
 package com.oscargs.savingsapp
 
-import android.widget.Space
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -23,6 +22,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
+import com.oscargs.savingsapp.utilities.MovementType
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -37,6 +37,7 @@ fun AddMovementScreen() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovementForm() {
     // Text variables
@@ -50,6 +51,10 @@ fun MovementForm() {
             DateTimeFormatter.ofPattern("dd-MM-yyyy").format(pickedDate)
         }
     }
+
+    // Type
+    var isExpanded by remember { mutableStateOf(false) }
+    var selectedType by remember { mutableStateOf(MovementType.Income) }
 
     // Error variables
 
@@ -83,6 +88,53 @@ fun MovementForm() {
 
         // Date field
         DateCalendarPicker(formattedDate, pickedDate)
+
+        //Type Selector
+        TypeSelector(isExpanded, selectedType)
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TypeSelector(
+    isExpanded: Boolean,
+    selectedType: MovementType
+) {
+    var expanded = isExpanded
+    var type = selectedType
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = Modifier.padding(8.dp)
+    ) {
+        TextField(
+            value = type.toString(),
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            modifier = Modifier.menuAnchor()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { R.string.labelIncome.toString() },
+                onClick = {
+                    type = MovementType.Income
+                    expanded = false
+                })
+            DropdownMenuItem(
+                text = { R.string.labelExpense.toString() },
+                onClick = {
+                    type = MovementType.Expense
+                    expanded = false
+                })
+        }
     }
 }
 
