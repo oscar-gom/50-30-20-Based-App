@@ -3,15 +3,8 @@ package com.oscargs.savingsapp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,7 +15,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -41,11 +33,6 @@ fun MovementForm() {
     // Text variables
     var text by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
-    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-    var showDatePicker by remember { mutableStateOf(false) }
-
-    // Date formatter
-    val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
 
     // Error variables
 
@@ -77,18 +64,14 @@ fun MovementForm() {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
         )
 
-        // Date picker
-
 
     }
 }
 
 
-
-
 @Preview(showBackground = true)
 @Composable
-fun AddMomventScreenPreview() {
+fun AddMovementScreenPreview() {
     SavingsAppTheme {
         AddMovementScreen()
     }
