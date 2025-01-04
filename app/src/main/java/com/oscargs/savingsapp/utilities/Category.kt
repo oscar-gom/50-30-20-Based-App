@@ -1,6 +1,6 @@
 package com.oscargs.savingsapp.utilities
 
-enum class Category {
+enum class Category() {
     // Expenses
     FOOD,
     TRANSPORTATION,
@@ -13,5 +13,7 @@ enum class Category {
     // Incomes
     SALARY,
     CAPITAL_GAINS,
-    OTHER_INCOMES
+    OTHER_INCOMES,
+    // Not selected
+    NONE
 }

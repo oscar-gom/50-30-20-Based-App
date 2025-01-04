@@ -8,6 +8,18 @@
     <string name="labelAccept">OK</string>
     <string name="labelCancel">Cancel</string>
     <string name="labelSelectDate">Select Date</string>
-    <string name="labelIncome">Ingreso</string>
+    <string name="labelIncome">Income</string>
     <string name="labelExpense">Expense</string>
+    <string name="categoryFood">Food</string>
+    <string name="categoryTransportation">Transportation</string>
+    <string name="categoryBills">Bills</string>
+    <string name="categoryEntertainment">Entertainment</string>
+    <string name="categoryHealth">Health</string>
+    <string name="categoryShopping">Shopping</string>
+    <string name="categoryRent">Rent</string>
+    <string name="categoryOtherExpenses">Other Expenses</string>
+    <string name="categorySalary">Salary</string>
+    <string name="categoryCapitalGains">Capital Gains</string>
+    <string name="categoryOtherIncomes">OtherIncomes</string>
+    <string name="categoryNone">Select a Category</string>
 </resources>

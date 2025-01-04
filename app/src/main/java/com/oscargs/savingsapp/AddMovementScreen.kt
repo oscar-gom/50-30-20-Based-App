@@ -1,5 +1,6 @@
 package com.oscargs.savingsapp
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
+import com.oscargs.savingsapp.utilities.Category
 import com.oscargs.savingsapp.utilities.MovementType
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -53,10 +55,12 @@ fun MovementForm() {
     }
 
     // Type
-    var isExpanded by remember { mutableStateOf(false) }
-    var selectedType by remember { mutableStateOf(MovementType.Income) }
+    var expandedType by remember { mutableStateOf(false) }
+    var selectedType by remember { mutableStateOf(MovementType.NONE) }
 
-    // Error variables
+    // Category
+    var expandedCategory by remember { mutableStateOf(false) }
+    var selectedCategory by remember { mutableStateOf(Category.NONE) }
 
     Column {
         // Description text field
@@ -64,8 +68,8 @@ fun MovementForm() {
             modifier = Modifier.padding(8.dp),
             value = text,
             onValueChange = { text = it },
-            label = { stringResource(R.string.labelDescriptionTF) },
-            placeholder = { stringResource(R.string.hintDescriptionTF) },
+            label = { Text(stringResource(R.string.labelDescriptionTF)) },
+            placeholder = { Text(stringResource(R.string.hintDescriptionTF)) },
             singleLine = true,
             isError = false
         )
@@ -79,8 +83,8 @@ fun MovementForm() {
                     amount = newValue
                 }
             },
-            label = { stringResource(R.string.labelAmountTF) },
-            placeholder = { stringResource(R.string.hintAmountTF) },
+            label = { Text(stringResource(R.string.labelAmountTF)) },
+            placeholder = { Text(stringResource(R.string.hintAmountTF)) },
             singleLine = true,
             isError = false,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
@@ -89,51 +93,153 @@ fun MovementForm() {
         // Date field
         DateCalendarPicker(formattedDate, pickedDate)
 
-        //Type Selector
-        TypeSelector(isExpanded, selectedType)
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun TypeSelector(
-    isExpanded: Boolean,
-    selectedType: MovementType
-) {
-    var expanded = isExpanded
-    var type = selectedType
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
-        modifier = Modifier.padding(8.dp)
-    ) {
-        TextField(
-            value = type.toString(),
-            onValueChange = {},
-            readOnly = true,
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
-            colors = ExposedDropdownMenuDefaults.textFieldColors(),
-            modifier = Modifier.menuAnchor()
-        )
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
+        // Type Selector
+        ExposedDropdownMenuBox(
+            expanded = expandedType,
+            onExpandedChange = { expandedType = it },
+            modifier = Modifier.padding(8.dp)
         ) {
-            DropdownMenuItem(
-                text = { R.string.labelIncome.toString() },
-                onClick = {
-                    type = MovementType.Income
-                    expanded = false
-                })
-            DropdownMenuItem(
-                text = { R.string.labelExpense.toString() },
-                onClick = {
-                    type = MovementType.Expense
-                    expanded = false
-                })
+            TextField(
+                value = stringResource(id = when (selectedType) {
+                    MovementType.INCOME -> R.string.labelIncome
+                    MovementType.EXPENSE -> R.string.labelExpense
+                    MovementType.NONE -> R.string.categoryNone
+                }),
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType)
+                },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                modifier = Modifier.menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expandedType,
+                onDismissRequest = { expandedType = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.labelIncome)) },
+                    onClick = {
+                        selectedType = MovementType.INCOME
+                        expandedType = false
+                    })
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.labelExpense)) },
+                    onClick = {
+                        selectedType = MovementType.EXPENSE
+                        expandedType = false
+                    })
+            }
+        }
+
+        // Category Selector
+        ExposedDropdownMenuBox(
+            expanded = expandedCategory,
+            onExpandedChange = { expandedCategory = it },
+            modifier = Modifier.padding(8.dp)
+        ) {
+            TextField(
+                value = stringResource(id = when (selectedCategory) {
+                    Category.FOOD -> R.string.categoryFood
+                    Category.TRANSPORTATION -> R.string.categoryTransportation
+                    Category.BILLS -> R.string.categoryBills
+                    Category.ENTERTAINMENT -> R.string.categoryEntertainment
+                    Category.HEALTH -> R.string.categoryHealth
+                    Category.SHOPPING -> R.string.categoryShopping
+                    Category.RENT -> R.string.categoryRent
+                    Category.OTHER_EXPENSES -> R.string.categoryOtherExpenses
+                    Category.SALARY -> R.string.categorySalary
+                    Category.CAPITAL_GAINS -> R.string.categoryCapitalGains
+                    Category.OTHER_INCOMES -> R.string.categoryOtherIncomes
+                    Category.NONE -> R.string.categoryNone
+                }),
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory)
+                },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                modifier = Modifier.menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expandedCategory,
+                onDismissRequest = { expandedCategory = false }
+            ) {
+                // Expenses
+                if (selectedType == MovementType.EXPENSE) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryFood)) },
+                        onClick = {
+                            selectedCategory = Category.FOOD
+                            expandedCategory = false
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryTransportation)) },
+                        onClick = {
+                            selectedCategory = Category.TRANSPORTATION
+                            expandedCategory = false
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryBills)) },
+                        onClick = {
+                            selectedCategory = Category.BILLS
+                            expandedCategory = false
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryEntertainment)) },
+                        onClick = {
+                            selectedCategory = Category.ENTERTAINMENT
+                            expandedCategory = false
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryHealth)) },
+                        onClick = {
+                            selectedCategory = Category.HEALTH
+                            expandedCategory = false
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryShopping)) },
+                        onClick = {
+                            selectedCategory = Category.SHOPPING
+                            expandedCategory = false
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryRent)) },
+                        onClick = {
+                            selectedCategory = Category.RENT
+                            expandedCategory = false
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryOtherExpenses)) },
+                        onClick = {
+                            selectedCategory = Category.OTHER_EXPENSES
+                            expandedCategory = false
+                        })
+                }
+                // Incomes
+                else {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categorySalary)) },
+                        onClick = {
+                            selectedCategory = Category.SALARY
+                            expandedCategory = false
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryCapitalGains)) },
+                        onClick = {
+                            selectedCategory = Category.CAPITAL_GAINS
+                            expandedCategory = false
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.categoryOtherIncomes)) },
+                        onClick = {
+                            selectedCategory = Category.OTHER_INCOMES
+                            expandedCategory = false
+                        })
+                }
+            }
         }
     }
 }
