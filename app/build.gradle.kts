@@ -58,6 +58,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Calendar
+    implementation("io.github.vanpra.compose-material-dialogs:datetime:0.8.1-rc")
+
     // Room
     val roomVersion = "2.6.1"
 
