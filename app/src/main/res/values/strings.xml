@@ -22,4 +22,7 @@
     <string name="categoryCapitalGains">Capital Gains</string>
     <string name="categoryOtherIncomes">OtherIncomes</string>
     <string name="categoryNone">Select a Category</string>
+    <string name="typeNone">Select a Type</string>
+    <string name="labelAddMovement">Add movement</string>
+    <string name="save">Save</string>
 </resources>

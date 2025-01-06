@@ -1,14 +1,17 @@
 package com.oscargs.savingsapp
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -47,7 +50,7 @@ fun MovementForm() {
     var amount by remember { mutableStateOf("") }
 
     // Date
-    val pickedDate by remember { mutableStateOf(LocalDate.now()) }
+    var pickedDate by remember { mutableStateOf(LocalDate.now()) }
     val formattedDate by remember {
         derivedStateOf {
             DateTimeFormatter.ofPattern("dd-MM-yyyy").format(pickedDate)
@@ -62,10 +65,27 @@ fun MovementForm() {
     var expandedCategory by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(Category.NONE) }
 
-    Column {
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(R.string.labelAddMovement),
+                modifier = Modifier.padding(8.dp)
+            )
+            FilledTonalButton(onClick = {
+                Log.d("AddMovementScreen", "Button clicked")
+            }) {
+                Text(text = stringResource(R.string.save))
+            }
+        }
+
         // Description text field
         TextField(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
             value = text,
             onValueChange = { text = it },
             label = { Text(stringResource(R.string.labelDescriptionTF)) },
@@ -76,7 +96,7 @@ fun MovementForm() {
 
         // Amount text field
         TextField(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
             value = amount,
             onValueChange = { newValue ->
                 if (newValue.matches(Regex("^\\d*\\.?\\d{0,2}\$"))) {
@@ -91,19 +111,41 @@ fun MovementForm() {
         )
 
         // Date field
-        DateCalendarPicker(formattedDate, pickedDate)
+        val dateDialogState = rememberMaterialDialogState()
+
+        FilledTonalButton(onClick = {
+            dateDialogState.show()
+        }, modifier = Modifier.padding(8.dp)) {
+            Text(text = stringResource(R.string.labelDateTF))
+        }
+        Text(modifier = Modifier.padding(8.dp), text = formattedDate)
+
+        MaterialDialog(
+            dialogState = dateDialogState,
+            buttons = {
+                positiveButton(R.string.labelAccept.toString())
+                negativeButton(R.string.labelCancel.toString())
+            }
+        ) {
+            datepicker(
+                initialDate = pickedDate ?: LocalDate.now(),
+                title = R.string.labelSelectDate.toString(),
+            ) {
+                pickedDate = it
+            }
+        }
 
         // Type Selector
         ExposedDropdownMenuBox(
             expanded = expandedType,
             onExpandedChange = { expandedType = it },
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             TextField(
                 value = stringResource(id = when (selectedType) {
                     MovementType.INCOME -> R.string.labelIncome
                     MovementType.EXPENSE -> R.string.labelExpense
-                    MovementType.NONE -> R.string.categoryNone
+                    MovementType.NONE -> R.string.typeNone
                 }),
                 onValueChange = {},
                 readOnly = true,
@@ -111,7 +153,7 @@ fun MovementForm() {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType)
                 },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                modifier = Modifier.menuAnchor()
+                modifier = Modifier.fillMaxWidth().menuAnchor()
             )
 
             ExposedDropdownMenu(
@@ -137,7 +179,7 @@ fun MovementForm() {
         ExposedDropdownMenuBox(
             expanded = expandedCategory,
             onExpandedChange = { expandedCategory = it },
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             TextField(
                 value = stringResource(id = when (selectedCategory) {
@@ -160,7 +202,7 @@ fun MovementForm() {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory)
                 },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                modifier = Modifier.menuAnchor()
+                modifier = Modifier.fillMaxWidth().menuAnchor()
             )
 
             ExposedDropdownMenu(
@@ -243,35 +285,6 @@ fun MovementForm() {
         }
     }
 }
-
-@Composable
-private fun DateCalendarPicker(formattedDate: String, pickedDate: LocalDate?) {
-    var pickedDate1 = pickedDate
-    val dateDialogState = rememberMaterialDialogState()
-
-    Button(onClick = {
-        dateDialogState.show()
-    }, modifier = Modifier.padding(8.dp)) {
-        Text(text = stringResource(R.string.labelDateTF))
-    }
-    Text(modifier = Modifier.padding(8.dp), text = formattedDate)
-
-    MaterialDialog(
-        dialogState = dateDialogState,
-        buttons = {
-            positiveButton(R.string.labelAccept.toString())
-            negativeButton(R.string.labelCancel.toString())
-        }
-    ) {
-        datepicker(
-            initialDate = pickedDate1 ?: LocalDate.now(),
-            title = R.string.labelSelectDate.toString(),
-        ) {
-            pickedDate1 = it
-        }
-    }
-}
-
 
 @Preview(showBackground = true)
 @Composable
