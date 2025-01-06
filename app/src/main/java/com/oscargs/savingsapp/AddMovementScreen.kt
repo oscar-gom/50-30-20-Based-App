@@ -201,7 +201,7 @@ fun MovementForm() {
         ExposedDropdownMenuBox(
             expanded = expandedCategory,
             onExpandedChange = { expandedCategory = it },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
+            modifier = Modifier.fillMaxWidth().padding(8.dp).padding(bottom = 32.dp)
         ) {
             TextField(
                 value = stringResource(id = when (selectedCategory) {
