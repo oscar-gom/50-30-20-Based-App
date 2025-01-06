@@ -1,5 +1,6 @@
 package com.oscargs.savingsapp
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,15 +26,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.oscargs.savingsapp.models.Movement
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
 import com.oscargs.savingsapp.utilities.Category
 import com.oscargs.savingsapp.utilities.MovementType
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+val db = MainApplication.database
 
 @Composable
 fun AddMovementScreen() {
@@ -78,6 +86,20 @@ fun MovementForm() {
             )
             FilledTonalButton(onClick = {
                 Log.d("AddMovementScreen", "Button clicked")
+                CoroutineScope(Dispatchers.IO).launch {
+                    db.movementDAO().addMovement(
+                        Movement(
+                            id = 0,
+                            amount = amount.toDouble(),
+                            description = text,
+                            date = pickedDate,
+                            type = selectedType,
+                            category = selectedCategory,
+                            creationTime = LocalDateTime.now(),
+                            modificationTime = LocalDateTime.now(),
+                        )
+                    )
+                }
             }) {
                 Text(text = stringResource(R.string.save))
             }
@@ -123,8 +145,8 @@ fun MovementForm() {
         MaterialDialog(
             dialogState = dateDialogState,
             buttons = {
-                positiveButton(R.string.labelAccept.toString())
-                negativeButton(R.string.labelCancel.toString())
+                positiveButton(stringResource(R.string.labelAccept))
+                negativeButton(stringResource(R.string.labelCancel))
             }
         ) {
             datepicker(
