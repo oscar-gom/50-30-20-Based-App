@@ -2,13 +2,15 @@ package com.oscargs.savingsapp.utilities
 
 enum class Category() {
     // Expenses
+    // Necessary
     FOOD,
     TRANSPORTATION,
     BILLS,
-    ENTERTAINMENT,
     HEALTH,
-    SHOPPING,
     RENT,
+    // Unnecessary
+    SHOPPING,
+    ENTERTAINMENT,
     OTHER_EXPENSES,
     // Incomes
     SALARY,

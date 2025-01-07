@@ -91,7 +91,6 @@ fun MainScreen() {
 fun MovementList(modifier: Modifier, movements: List<Movement>) {
     LazyColumn(modifier = modifier) {
         items(movements) { movement ->
-            //TODO: Make a better item display
             ItemDisplay(movement)
         }
     }
@@ -103,7 +102,9 @@ fun ItemDisplay(movement: Movement) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+            .background(
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(8.dp)
+            )
             .padding(16.dp)
     ) {
         Column {
@@ -131,9 +132,7 @@ fun ItemDisplay(movement: Movement) {
                         MovementType.INCOME -> stringResource(id = R.string.labelIncome)
                         MovementType.EXPENSE -> stringResource(id = R.string.labelExpense)
                         MovementType.NONE -> stringResource(id = R.string.typeNone)
-                    },
-                    fontSize = 12.sp,
-                    color = Color.Gray
+                    }, fontSize = 12.sp, color = Color.Gray
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -150,9 +149,21 @@ fun ItemDisplay(movement: Movement) {
                         Category.CAPITAL_GAINS -> stringResource(id = R.string.categoryCapitalGains)
                         Category.OTHER_INCOMES -> stringResource(id = R.string.categoryOtherIncomes)
                         Category.NONE -> stringResource(id = R.string.categoryNone)
-                    },
-                    fontSize = 12.sp,
-                    color = Color.Gray
+                    }, fontSize = 12.sp, color = Color.Gray
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = when (movement.category) {
+                        Category.FOOD, Category.TRANSPORTATION, Category.BILLS, Category.HEALTH, Category.RENT -> stringResource(
+                            id = R.string.necessary
+                        )
+
+                        Category.SHOPPING, Category.ENTERTAINMENT, Category.OTHER_EXPENSES -> stringResource(
+                            id = R.string.unnecessary
+                        )
+
+                        else -> ""
+                    }, fontSize = 12.sp, color = Color.Gray, modifier = Modifier.weight(1f)
                 )
             }
             Box(

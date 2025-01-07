@@ -20,10 +20,12 @@
     <string name="categoryOtherExpenses">Other Expenses</string>
     <string name="categorySalary">Salary</string>
     <string name="categoryCapitalGains">Capital Gains</string>
-    <string name="categoryOtherIncomes">OtherIncomes</string>
+    <string name="categoryOtherIncomes">Other Incomes</string>
     <string name="categoryNone">Select a Category</string>
     <string name="typeNone">Select a Type</string>
     <string name="labelAddMovement">Add movement</string>
     <string name="save">Save</string>
     <string name="errorEmptyFields">ERROR: Don\'t leave empty fields!</string>
+    <string name="necessary">Necessary</string>
+    <string name="unnecessary">Unnecessary</string>
 </resources>
