@@ -61,6 +61,13 @@ fun MainScreen(modifier: Modifier) {
 
     Scaffold(
         modifier = modifier,
+        topBar = {
+            Text(
+                text = stringResource(id = R.string.app_name),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(16.dp)
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 scope.launch {
@@ -71,10 +78,10 @@ fun MainScreen(modifier: Modifier) {
             }
         },
     ) { innerPadding ->
-
-
-        // Movement list
-        MovementList(modifier = Modifier.padding(innerPadding), movements = movementList)
+        Column {
+            // Movement list
+            MovementList(modifier = Modifier.padding(innerPadding), movements = movementList)
+        }
 
         // Bottom sheet
         if (showBottomSheet) {
