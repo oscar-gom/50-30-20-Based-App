@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(modifier: Modifier) {
     // Bottom sheet
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
@@ -60,7 +60,7 @@ fun MainScreen() {
     val movementList by movements.observeAsState(initial = emptyList())
 
     Scaffold(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 scope.launch {
@@ -71,6 +71,8 @@ fun MainScreen() {
             }
         },
     ) { innerPadding ->
+
+
         // Movement list
         MovementList(modifier = Modifier.padding(innerPadding), movements = movementList)
 
@@ -192,6 +194,6 @@ fun loadMovements(): LiveData<List<Movement>> = liveData(Dispatchers.IO) {
 @Composable
 fun MainScreenPreview() {
     SavingsAppTheme {
-        MainScreen()
+        MainScreen(Modifier.fillMaxWidth())
     }
 }
