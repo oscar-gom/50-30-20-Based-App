@@ -1,16 +1,24 @@
 package com.oscargs.savingsapp
 
-import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,16 +31,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import com.oscargs.savingsapp.models.Movement
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
-import kotlinx.coroutines.CoroutineScope
+import com.oscargs.savingsapp.utilities.Category
+import com.oscargs.savingsapp.utilities.MovementType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,13 +62,11 @@ fun MainScreen() {
     Scaffold(
         modifier = Modifier.fillMaxWidth(),
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    scope.launch {
-                        showBottomSheet = true
-                    }
+            FloatingActionButton(onClick = {
+                scope.launch {
+                    showBottomSheet = true
                 }
-            ) {
+            }) {
                 Icon(Icons.Filled.Add, contentDescription = "Add movement button")
             }
         },
@@ -69,9 +79,7 @@ fun MainScreen() {
             ModalBottomSheet(
                 onDismissRequest = {
                     showBottomSheet = false
-                },
-                sheetState = sheetState,
-                modifier = Modifier.padding(innerPadding)
+                }, sheetState = sheetState, modifier = Modifier.padding(innerPadding)
             ) {
                 AddMovementScreen()
             }
@@ -84,7 +92,81 @@ fun MovementList(modifier: Modifier, movements: List<Movement>) {
     LazyColumn(modifier = modifier) {
         items(movements) { movement ->
             //TODO: Make a better item display
-            Text(text = movement.toString(), modifier = Modifier.padding(8.dp))
+            ItemDisplay(movement)
+        }
+    }
+}
+
+@Composable
+fun ItemDisplay(movement: Movement) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+            .padding(16.dp)
+    ) {
+        Column {
+            Row {
+                Text(
+                    text = movement.description,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = movement.amount.toString(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = movement.date.toString())
+            }
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            Row {
+                Text(
+                    text = when (movement.type) {
+                        MovementType.INCOME -> stringResource(id = R.string.labelIncome)
+                        MovementType.EXPENSE -> stringResource(id = R.string.labelExpense)
+                        MovementType.NONE -> stringResource(id = R.string.typeNone)
+                    },
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = when (movement.category) {
+                        Category.FOOD -> stringResource(id = R.string.categoryFood)
+                        Category.TRANSPORTATION -> stringResource(id = R.string.categoryTransportation)
+                        Category.BILLS -> stringResource(id = R.string.categoryBills)
+                        Category.ENTERTAINMENT -> stringResource(id = R.string.categoryEntertainment)
+                        Category.HEALTH -> stringResource(id = R.string.categoryHealth)
+                        Category.SHOPPING -> stringResource(id = R.string.categoryShopping)
+                        Category.RENT -> stringResource(id = R.string.categoryRent)
+                        Category.OTHER_EXPENSES -> stringResource(id = R.string.categoryOtherExpenses)
+                        Category.SALARY -> stringResource(id = R.string.categorySalary)
+                        Category.CAPITAL_GAINS -> stringResource(id = R.string.categoryCapitalGains)
+                        Category.OTHER_INCOMES -> stringResource(id = R.string.categoryOtherIncomes)
+                        Category.NONE -> stringResource(id = R.string.categoryNone)
+                    },
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .background(
+                        color = when (movement.type) {
+                            MovementType.INCOME -> Color.Green
+                            MovementType.EXPENSE -> Color.Red
+                            else -> Color.Transparent
+                        }
+                    )
+            )
         }
     }
 }
