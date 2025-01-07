@@ -1,6 +1,7 @@
 package com.oscargs.savingsapp
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,9 +32,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,7 +54,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(modifier: Modifier) {
     // Bottom sheet
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
@@ -60,7 +65,14 @@ fun MainScreen() {
     val movementList by movements.observeAsState(initial = emptyList())
 
     Scaffold(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
+        topBar = {
+            Text(
+                text = stringResource(id = R.string.app_name),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(16.dp)
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 scope.launch {
@@ -71,8 +83,54 @@ fun MainScreen() {
             }
         },
     ) { innerPadding ->
-        // Movement list
-        MovementList(modifier = Modifier.padding(innerPadding), movements = movementList)
+        Column(modifier = Modifier.padding(innerPadding)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f).padding(end = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = stringResource(R.string.necessary), textAlign = TextAlign.Center)
+                    TextField(
+                        value = "",
+                        onValueChange = { /*TODO*/ },
+                        readOnly = true,
+                        textStyle = TextStyle(textAlign = TextAlign.Center)
+                    )
+                }
+                Column(
+                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = stringResource(R.string.unnecessary), textAlign = TextAlign.Center)
+                    TextField(
+                        value = "",
+                        onValueChange = { /*TODO*/ },
+                        readOnly = true,
+                        textStyle = TextStyle(textAlign = TextAlign.Center)
+                    )
+                }
+                Column(
+                    modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = stringResource(R.string.savings), textAlign = TextAlign.Center)
+                    TextField(
+                        value = "",
+                        onValueChange = { /*TODO*/ },
+                        readOnly = true,
+                        textStyle = TextStyle(textAlign = TextAlign.Center)
+                    )
+                }
+            }
+            // Movement list
+            MovementList(modifier = Modifier.padding(8.dp), movements = movementList)
+        }
+
 
         // Bottom sheet
         if (showBottomSheet) {
@@ -86,6 +144,7 @@ fun MainScreen() {
         }
     }
 }
+
 
 @Composable
 fun MovementList(modifier: Modifier, movements: List<Movement>) {
@@ -192,6 +251,6 @@ fun loadMovements(): LiveData<List<Movement>> = liveData(Dispatchers.IO) {
 @Composable
 fun MainScreenPreview() {
     SavingsAppTheme {
-        MainScreen()
+        MainScreen(Modifier.fillMaxWidth())
     }
 }

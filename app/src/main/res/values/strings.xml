@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SavingsApp</string>
+    <string name="app_name">Savings App</string>
     <string name="labelDescriptionTF">Description</string>
     <string name="hintDescriptionTF">Add your description</string>
     <string name="labelAmountTF">Amount</string>
@@ -28,4 +28,5 @@
     <string name="errorEmptyFields">ERROR: Don\'t leave empty fields!</string>
     <string name="necessary">Necessary</string>
     <string name="unnecessary">Unnecessary</string>
+    <string name="savings">Savings</string>
 </resources>
