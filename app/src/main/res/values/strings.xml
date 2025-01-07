@@ -28,4 +28,5 @@
     <string name="errorEmptyFields">ERROR: Don\'t leave empty fields!</string>
     <string name="necessary">Necessary</string>
     <string name="unnecessary">Unnecessary</string>
+    <string name="savings">Savings</string>
 </resources>
