@@ -25,4 +25,5 @@
     <string name="typeNone">Select a Type</string>
     <string name="labelAddMovement">Add movement</string>
     <string name="save">Save</string>
+    <string name="errorEmptyFields">ERROR: Don\'t leave empty fields!</string>
 </resources>

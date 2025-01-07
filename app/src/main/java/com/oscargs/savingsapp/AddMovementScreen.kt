@@ -1,10 +1,11 @@
 package com.oscargs.savingsapp
 
 import android.content.Context
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,6 +17,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +38,6 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -73,7 +74,20 @@ fun MovementForm() {
     var expandedCategory by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(Category.NONE) }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+    // Errors
+    var descriptionError by remember { mutableStateOf(false) }
+    var amountError by remember { mutableStateOf(false) }
+    var typeError by remember { mutableStateOf(false) }
+    var categoryError by remember { mutableStateOf(false) }
+
+    // Reset category when type changes
+    LaunchedEffect(selectedType) {
+        selectedCategory = Category.NONE
+    }
+
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -85,7 +99,16 @@ fun MovementForm() {
                 modifier = Modifier.padding(8.dp)
             )
             FilledTonalButton(onClick = {
-                Log.d("AddMovementScreen", "Button clicked")
+                // Error handling
+                descriptionError = text.isEmpty()
+                amountError = amount.isEmpty()
+                typeError = selectedType == MovementType.NONE
+                categoryError = selectedCategory == Category.NONE
+
+                if (descriptionError || amountError || typeError || categoryError) {
+                    return@FilledTonalButton
+                }
+
                 CoroutineScope(Dispatchers.IO).launch {
                     db.movementDAO().addMovement(
                         Movement(
@@ -107,18 +130,22 @@ fun MovementForm() {
 
         // Description text field
         TextField(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
             value = text,
             onValueChange = { text = it },
             label = { Text(stringResource(R.string.labelDescriptionTF)) },
             placeholder = { Text(stringResource(R.string.hintDescriptionTF)) },
             singleLine = true,
-            isError = false
+            isError = descriptionError
         )
 
         // Amount text field
         TextField(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
             value = amount,
             onValueChange = { newValue ->
                 if (newValue.matches(Regex("^\\d*\\.?\\d{0,2}\$"))) {
@@ -128,7 +155,7 @@ fun MovementForm() {
             label = { Text(stringResource(R.string.labelAmountTF)) },
             placeholder = { Text(stringResource(R.string.hintAmountTF)) },
             singleLine = true,
-            isError = false,
+            isError = amountError,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
         )
 
@@ -161,7 +188,9 @@ fun MovementForm() {
         ExposedDropdownMenuBox(
             expanded = expandedType,
             onExpandedChange = { expandedType = it },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
         ) {
             TextField(
                 value = stringResource(id = when (selectedType) {
@@ -171,11 +200,14 @@ fun MovementForm() {
                 }),
                 onValueChange = {},
                 readOnly = true,
+                isError = typeError,
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType)
                 },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                modifier = Modifier.fillMaxWidth().menuAnchor()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
             )
 
             ExposedDropdownMenu(
@@ -201,7 +233,10 @@ fun MovementForm() {
         ExposedDropdownMenuBox(
             expanded = expandedCategory,
             onExpandedChange = { expandedCategory = it },
-            modifier = Modifier.fillMaxWidth().padding(8.dp).padding(bottom = 32.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .padding(bottom = 32.dp)
         ) {
             TextField(
                 value = stringResource(id = when (selectedCategory) {
@@ -220,11 +255,14 @@ fun MovementForm() {
                 }),
                 onValueChange = {},
                 readOnly = true,
+                isError = categoryError,
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory)
                 },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                modifier = Modifier.fillMaxWidth().menuAnchor()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
             )
 
             ExposedDropdownMenu(
@@ -307,6 +345,7 @@ fun MovementForm() {
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
