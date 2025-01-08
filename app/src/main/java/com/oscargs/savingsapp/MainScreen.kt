@@ -67,9 +67,14 @@ fun MainScreen(modifier: Modifier) {
     val movements: LiveData<List<Movement>> = loadMovements()
     val movementList by movements.observeAsState(initial = emptyList())
 
+    // Values for the top bar
     var totalNecessary = 0.0
     var totalUnnecessary = 0.0
     var totalIncome = 0.0
+
+    var isErrorNecessary by remember { mutableStateOf(false) }
+    var isErrorUnnecessary by remember { mutableStateOf(false) }
+    var isErrorSavings by remember { mutableStateOf(false) }
 
     for (movement in movementList) {
         when (movement.category) {
@@ -88,6 +93,7 @@ fun MainScreen(modifier: Modifier) {
             Category.NONE -> {}
         }
     }
+
 
     Scaffold(
         modifier = modifier,
@@ -122,6 +128,11 @@ fun MainScreen(modifier: Modifier) {
                 val savingsPercentage =
                     if (totalIncome > 0) ((totalIncome - totalNecessary - totalUnnecessary) / totalIncome) * 100 else 0.0
 
+                // Calculate errors
+                isErrorNecessary = necessaryPercentage > 50
+                isErrorUnnecessary = unnecessaryPercentage > 30
+                isErrorSavings = savingsPercentage < 20
+
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -132,8 +143,12 @@ fun MainScreen(modifier: Modifier) {
                     TextField(
                         value = String.format("%.2f%%", necessaryPercentage),
                         onValueChange = { },
+                        textStyle = TextStyle(
+                            textAlign = TextAlign.Center,
+                            color = if (isErrorNecessary) Color(0xFF861d1d) else Color(0xFF0b6730)
+                        ),
                         readOnly = true,
-                        textStyle = TextStyle(textAlign = TextAlign.Center)
+                        isError = isErrorNecessary,
                     )
                 }
                 Column(
@@ -147,7 +162,11 @@ fun MainScreen(modifier: Modifier) {
                         value = String.format("%.2f%%", unnecessaryPercentage),
                         onValueChange = { },
                         readOnly = true,
-                        textStyle = TextStyle(textAlign = TextAlign.Center)
+                        textStyle = TextStyle(
+                            textAlign = TextAlign.Center,
+                            color = if (isErrorUnnecessary) Color(0xFF861d1d) else Color(0xFF0b6730)
+                        ),
+                        isError = isErrorUnnecessary
                     )
                 }
                 Column(
@@ -161,7 +180,11 @@ fun MainScreen(modifier: Modifier) {
                         value = String.format("%.2f%%", savingsPercentage),
                         onValueChange = { },
                         readOnly = true,
-                        textStyle = TextStyle(textAlign = TextAlign.Center)
+                        textStyle = TextStyle(
+                            textAlign = TextAlign.Center,
+                            color = if (isErrorSavings) Color(0xFF861d1d) else Color(0xFF0b6730)
+                        ),
+                        isError = isErrorSavings
                     )
                 }
 
@@ -174,8 +197,7 @@ fun MainScreen(modifier: Modifier) {
             ) {
                 Text(
                     text = stringResource(R.string.totalIncome) + String.format(
-                        "%.2f €",
-                        totalIncome
+                        "%.2f €", totalIncome
                     ),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f),
@@ -183,15 +205,14 @@ fun MainScreen(modifier: Modifier) {
                 )
                 Text(
                     text = stringResource(R.string.totalSpendings) + String.format(
-                        "%.2f €",
-                        (totalNecessary + totalUnnecessary)
+                        "%.2f €", (totalNecessary + totalUnnecessary)
                     ),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f),
                     fontSize = 14.sp
                 )
             }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
 
             // Movement list
             MovementList(modifier = Modifier.padding(8.dp), movements = movementList)
