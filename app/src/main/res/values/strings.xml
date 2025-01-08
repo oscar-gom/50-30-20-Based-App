@@ -29,4 +29,6 @@
     <string name="necessary">Necessary</string>
     <string name="unnecessary">Unnecessary</string>
     <string name="savings">Savings</string>
+    <string name="totalIncome">Total Income:‏‏‎ ‎</string>
+    <string name="totalSpendings">"Total Spending's:‏‏‎ ‎"</string>
 </resources>
