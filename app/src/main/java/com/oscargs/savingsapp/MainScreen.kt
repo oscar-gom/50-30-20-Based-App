@@ -176,13 +176,19 @@ fun MainScreen(modifier: Modifier) {
                     text = stringResource(R.string.totalIncome) + String.format(
                         "%.2f €",
                         totalIncome
-                    ), textAlign = TextAlign.Center
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f),
+                    fontSize = 14.sp
                 )
                 Text(
                     text = stringResource(R.string.totalSpendings) + String.format(
                         "%.2f €",
                         (totalNecessary + totalUnnecessary)
-                    ), textAlign = TextAlign.Center
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f),
+                    fontSize = 14.sp
                 )
             }
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
