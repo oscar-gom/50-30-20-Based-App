@@ -1,5 +1,6 @@
 package com.oscargs.savingsapp
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,8 +51,10 @@ import com.oscargs.savingsapp.utilities.Category
 import com.oscargs.savingsapp.utilities.MovementType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.format.DateTimeFormatter
 
 
+@SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(modifier: Modifier) {
@@ -63,6 +66,28 @@ fun MainScreen(modifier: Modifier) {
     // DB
     val movements: LiveData<List<Movement>> = loadMovements()
     val movementList by movements.observeAsState(initial = emptyList())
+
+    var totalNecessary = 0.0
+    var totalUnnecessary = 0.0
+    var totalIncome = 0.0
+
+    for (movement in movementList) {
+        when (movement.category) {
+            Category.FOOD, Category.TRANSPORTATION, Category.BILLS, Category.HEALTH, Category.RENT -> {
+                totalNecessary += movement.amount
+            }
+
+            Category.SHOPPING, Category.ENTERTAINMENT, Category.OTHER_EXPENSES -> {
+                totalUnnecessary += movement.amount
+            }
+
+            Category.SALARY, Category.CAPITAL_GAINS, Category.OTHER_INCOMES -> {
+                totalIncome += movement.amount
+            }
+
+            Category.NONE -> {}
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -90,43 +115,78 @@ fun MainScreen(modifier: Modifier) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                val necessaryPercentage =
+                    if (totalIncome > 0) (totalNecessary / totalIncome) * 100 else 0.0
+                val unnecessaryPercentage =
+                    if (totalIncome > 0) (totalUnnecessary / totalIncome) * 100 else 0.0
+                val savingsPercentage =
+                    if (totalIncome > 0) ((totalIncome - totalNecessary - totalUnnecessary) / totalIncome) * 100 else 0.0
+
                 Column(
-                    modifier = Modifier.weight(1f).padding(end = 8.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = stringResource(R.string.necessary), textAlign = TextAlign.Center)
                     TextField(
-                        value = "",
-                        onValueChange = { /*TODO*/ },
+                        value = String.format("%.2f%%", necessaryPercentage),
+                        onValueChange = { },
                         readOnly = true,
                         textStyle = TextStyle(textAlign = TextAlign.Center)
                     )
                 }
                 Column(
-                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = stringResource(R.string.unnecessary), textAlign = TextAlign.Center)
                     TextField(
-                        value = "",
-                        onValueChange = { /*TODO*/ },
+                        value = String.format("%.2f%%", unnecessaryPercentage),
+                        onValueChange = { },
                         readOnly = true,
                         textStyle = TextStyle(textAlign = TextAlign.Center)
                     )
                 }
                 Column(
-                    modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = stringResource(R.string.savings), textAlign = TextAlign.Center)
                     TextField(
-                        value = "",
-                        onValueChange = { /*TODO*/ },
+                        value = String.format("%.2f%%", savingsPercentage),
+                        onValueChange = { },
                         readOnly = true,
                         textStyle = TextStyle(textAlign = TextAlign.Center)
                     )
                 }
+
             }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = stringResource(R.string.totalIncome) + String.format(
+                        "%.2f €",
+                        totalIncome
+                    ), textAlign = TextAlign.Center
+                )
+                Text(
+                    text = stringResource(R.string.totalSpendings) + String.format(
+                        "%.2f €",
+                        (totalNecessary + totalUnnecessary)
+                    ), textAlign = TextAlign.Center
+                )
+            }
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
             // Movement list
             MovementList(modifier = Modifier.padding(8.dp), movements = movementList)
         }
@@ -182,7 +242,10 @@ fun ItemDisplay(movement: Movement) {
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = movement.date.toString())
+                Text(
+                    text = movement.date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                        .toString()
+                )
             }
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             Row {
