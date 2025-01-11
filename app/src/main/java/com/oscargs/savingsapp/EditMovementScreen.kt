@@ -25,6 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.liveData
 import com.oscargs.savingsapp.models.Movement
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
 import com.oscargs.savingsapp.utilities.Category
@@ -35,28 +37,33 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-val db = MainApplication.database
-
 @Composable
-fun AddMovementScreen() {
+fun EditMovementScreen(id: Int) {
     SavingsAppTheme {
-        MovementForm()
+        EditMovementForm(id = id)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovementForm() {
+fun EditMovementForm(id: Int) {
+    // Database
+    val db = MainApplication.database
+
+    val movementData: LiveData<Movement> = getMovement(id = id)
+    val movement = movementData.value
+
     // Text variables
-    var text by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(movement?.description ?: "") }
+    var amount by remember { mutableStateOf(movement?.amount?.toString() ?: "") }
 
     // Date
-    var pickedDate by remember { mutableStateOf(LocalDate.now()) }
+    var pickedDate by remember { mutableStateOf(movement?.date ?: LocalDate.now()) }
     val formattedDate by remember {
         derivedStateOf {
             DateTimeFormatter.ofPattern("dd-MM-yyyy").format(pickedDate)
@@ -65,11 +72,11 @@ fun MovementForm() {
 
     // Type
     var expandedType by remember { mutableStateOf(false) }
-    var selectedType by remember { mutableStateOf(MovementType.NONE) }
+    var selectedType by remember { mutableStateOf(movement?.type ?: MovementType.NONE) }
 
     // Category
     var expandedCategory by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf(Category.NONE) }
+    var selectedCategory by remember { mutableStateOf(movement?.category ?: Category.NONE) }
 
     // Errors
     var descriptionError by remember { mutableStateOf(false) }
@@ -82,6 +89,17 @@ fun MovementForm() {
         selectedCategory = Category.NONE
     }
 
+    // Update states when movement changes
+    LaunchedEffect(movement) {
+        movement?.let {
+            text = it.description
+            amount = it.amount.toString()
+            pickedDate = it.date
+            selectedType = it.type
+            selectedCategory = it.category
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -90,31 +108,31 @@ fun MovementForm() {
                     FilledTonalButton(
                         modifier = Modifier.padding(16.dp),
                         onClick = {
-                        // Error handling
-                        descriptionError = text.isEmpty()
-                        amountError = amount.isEmpty()
-                        typeError = selectedType == MovementType.NONE
-                        categoryError = selectedCategory == Category.NONE
+                            // Error handling
+                            descriptionError = text.isEmpty()
+                            amountError = amount.isEmpty()
+                            typeError = selectedType == MovementType.NONE
+                            categoryError = selectedCategory == Category.NONE
 
-                        if (descriptionError || amountError || typeError || categoryError) {
-                            return@FilledTonalButton
-                        }
+                            if (descriptionError || amountError || typeError || categoryError) {
+                                return@FilledTonalButton
+                            }
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            db.movementDAO().addMovement(
-                                Movement(
-                                    id = 0,
-                                    amount = amount.toDouble(),
-                                    description = text,
-                                    date = pickedDate,
-                                    type = selectedType,
-                                    category = selectedCategory,
-                                    creationTime = LocalDateTime.now(),
-                                    modificationTime = LocalDateTime.now(),
+                            CoroutineScope(Dispatchers.IO).launch {
+                                db.movementDAO().addMovement(
+                                    Movement(
+                                        id = 0,
+                                        amount = amount.toDouble(),
+                                        description = text,
+                                        date = pickedDate,
+                                        type = selectedType,
+                                        category = selectedCategory,
+                                        creationTime = LocalDateTime.now(),
+                                        modificationTime = LocalDateTime.now(),
+                                    )
                                 )
-                            )
-                        }
-                    }) {
+                            }
+                        }) {
                         Text(text = stringResource(R.string.save))
                     }
                 }
@@ -345,11 +363,18 @@ fun MovementForm() {
     }
 }
 
+fun getMovement(id: Int): LiveData<Movement> = liveData(Dispatchers.IO) {
+    val db = MainApplication.database
+    val movement = db.movementDAO().getMovementById(id).value
+    emit(movement!!)
+
+}
+
 
 @Preview(showBackground = true)
 @Composable
-fun AddMovementScreenPreview() {
+fun EditMovementScreenPreview() {
     SavingsAppTheme {
-        MovementForm()
+        EditMovementScreen(id = 0)
     }
 }

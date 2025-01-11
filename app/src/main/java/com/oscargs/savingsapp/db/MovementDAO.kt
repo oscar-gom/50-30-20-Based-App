@@ -15,7 +15,7 @@ interface MovementDAO {
     fun getAllMovements(): LiveData<List<Movement>>
 
     @Query("SELECT * FROM Movement WHERE id = :id")
-    fun getMovementById(id: Int): Movement
+    fun getMovementById(id: Int): LiveData<Movement>
 
     @Query("SELECT * FROM Movement WHERE type = :type")
     fun getMovementsByType(type: MovementType): LiveData<List<Movement>>
