@@ -226,7 +226,7 @@ fun MainScreen(modifier: Modifier) {
                     showBottomSheet = false
                 }, sheetState = sheetState, modifier = Modifier.padding(innerPadding)
             ) {
-                EditMovementScreen()
+                AddMovementScreen()
             }
         }
     }
