@@ -2,6 +2,7 @@ package com.oscargs.savingsapp
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,10 +59,13 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(modifier: Modifier) {
-    // Bottom sheet
-    val sheetState = rememberModalBottomSheetState()
+    // Bottom sheet states
+    val addSheetState = rememberModalBottomSheetState()
+    val editSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var showAddBottomSheet by remember { mutableStateOf(false) }
+    var showEditBottomSheet by remember { mutableStateOf(false) }
+    var selectedMovementId by remember { mutableStateOf<Int?>(null) }
 
     // DB
     val movements: LiveData<List<Movement>> = loadMovements()
@@ -107,7 +111,7 @@ fun MainScreen(modifier: Modifier) {
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 scope.launch {
-                    showBottomSheet = true
+                    showAddBottomSheet = true
                 }
             }) {
                 Icon(Icons.Filled.Add, contentDescription = "Add movement button")
@@ -215,18 +219,37 @@ fun MainScreen(modifier: Modifier) {
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
 
             // Movement list
-            MovementList(modifier = Modifier.padding(8.dp), movements = movementList)
+            MovementList(
+                modifier = Modifier.padding(8.dp),
+                movements = movementList,
+                onItemClick = { movementId ->
+                    scope.launch {
+                        selectedMovementId = movementId
+                        showEditBottomSheet = true
+                    }
+                }
+            )
         }
 
-
-        // Bottom sheet
-        if (showBottomSheet) {
+        // Add Bottom sheet
+        if (showAddBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = {
-                    showBottomSheet = false
-                }, sheetState = sheetState, modifier = Modifier.padding(innerPadding)
+                    showAddBottomSheet = false
+                }, sheetState = addSheetState, modifier = Modifier.padding(innerPadding)
             ) {
                 AddMovementScreen()
+            }
+        }
+
+        // Edit Bottom sheet
+        if (showEditBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showEditBottomSheet = false
+                }, sheetState = editSheetState, modifier = Modifier.padding(innerPadding)
+            ) {
+                EditMovementScreen(id = selectedMovementId!!)
             }
         }
     }
@@ -234,16 +257,16 @@ fun MainScreen(modifier: Modifier) {
 
 
 @Composable
-fun MovementList(modifier: Modifier, movements: List<Movement>) {
+fun MovementList(modifier: Modifier, movements: List<Movement>, onItemClick: (Int) -> Unit) {
     LazyColumn(modifier = modifier) {
         items(movements) { movement ->
-            ItemDisplay(movement)
+            ItemDisplay(movement, onItemClick)
         }
     }
 }
 
 @Composable
-fun ItemDisplay(movement: Movement) {
+fun ItemDisplay(movement: Movement, onItemClick: (Int) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -252,6 +275,7 @@ fun ItemDisplay(movement: Movement) {
                 MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(8.dp)
             )
             .padding(16.dp)
+            .clickable { onItemClick(movement.id) }
     ) {
         Column {
             Row {
