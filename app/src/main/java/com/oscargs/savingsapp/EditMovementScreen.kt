@@ -1,5 +1,6 @@
 package com.oscargs.savingsapp
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,6 +38,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -55,15 +57,15 @@ fun EditMovementForm(id: Int) {
     // Database
     val db = MainApplication.database
 
-    val movementData: LiveData<Movement> = getMovement(id = id)
-    val movement = movementData.value
+    // Obtén los datos del movimiento
+    val movement: Movement = getMovement(id = id)
 
     // Text variables
-    var text by remember { mutableStateOf(movement?.description ?: "") }
-    var amount by remember { mutableStateOf(movement?.amount?.toString() ?: "") }
+    var text by remember { mutableStateOf(movement.description) }
+    var amount by remember { mutableStateOf(movement.amount.toString()) }
 
     // Date
-    var pickedDate by remember { mutableStateOf(movement?.date ?: LocalDate.now()) }
+    var pickedDate by remember { mutableStateOf(movement.date) }
     val formattedDate by remember {
         derivedStateOf {
             DateTimeFormatter.ofPattern("dd-MM-yyyy").format(pickedDate)
@@ -72,11 +74,11 @@ fun EditMovementForm(id: Int) {
 
     // Type
     var expandedType by remember { mutableStateOf(false) }
-    var selectedType by remember { mutableStateOf(movement?.type ?: MovementType.NONE) }
+    var selectedType by remember { mutableStateOf(movement.type) }
 
     // Category
     var expandedCategory by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf(movement?.category ?: Category.NONE) }
+    var selectedCategory by remember { mutableStateOf(movement.category) }
 
     // Errors
     var descriptionError by remember { mutableStateOf(false) }
@@ -91,13 +93,11 @@ fun EditMovementForm(id: Int) {
 
     // Update states when movement changes
     LaunchedEffect(movement) {
-        movement?.let {
-            text = it.description
-            amount = it.amount.toString()
-            pickedDate = it.date
-            selectedType = it.type
-            selectedCategory = it.category
-        }
+        text = movement.description
+        amount = movement.amount.toString()
+        pickedDate = movement.date
+        selectedType = movement.type
+        selectedCategory = movement.category
     }
 
     Scaffold(
@@ -363,11 +363,15 @@ fun EditMovementForm(id: Int) {
     }
 }
 
-fun getMovement(id: Int): LiveData<Movement> = liveData(Dispatchers.IO) {
+fun getMovement(id: Int): Movement {
     val db = MainApplication.database
-    val movement = db.movementDAO().getMovementById(id).value
-    emit(movement!!)
-
+    var movement: Movement? = null
+    runBlocking {
+        movement = withContext(Dispatchers.IO) {
+            db.movementDAO().getMovementById(id)
+        }
+    }
+    return movement ?: throw IllegalStateException("Movement not found")
 }
 
 
