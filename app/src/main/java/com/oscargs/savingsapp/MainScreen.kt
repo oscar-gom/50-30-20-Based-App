@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
@@ -82,6 +83,8 @@ fun MainScreen(modifier: Modifier) {
     var isErrorNecessary by remember { mutableStateOf(false) }
     var isErrorUnnecessary by remember { mutableStateOf(false) }
     var isErrorSavings by remember { mutableStateOf(false) }
+
+
 
     for (movement in movementList) {
         when (movement.category) {
@@ -270,6 +273,7 @@ fun MovementList(modifier: Modifier, movements: List<Movement>, onItemClick: (In
 
 @Composable
 fun ItemDisplay(movement: Movement, onItemClick: (Int) -> Unit) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -354,17 +358,53 @@ fun ItemDisplay(movement: Movement, onItemClick: (Int) -> Unit) {
                         }
                     )
             )
-            FilledTonalButton (
+            FilledTonalButton(
                 modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
                 onClick = {
-                    /*TODO*/
+                    showDeleteDialog = true
                 }
             ) {
                 Icon(Icons.Filled.Delete, contentDescription = stringResource(id = R.string.deleteMovement))
             }
+
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = {
+                        Text(text = stringResource(id = R.string.deleteMovement))
+                    },
+                    text = {
+                        Text(text = stringResource(id = R.string.deleteMovementConfirmation))
+                    },
+                    confirmButton = {
+                        FilledTonalButton(
+                            onClick = {
+                                deleteMovement(movement)
+                                showDeleteDialog = false
+                            }
+                        ) {
+                            Text(text = stringResource(id = R.string.delete))
+                        }
+                    },
+                    dismissButton = {
+                        FilledTonalButton(
+                            onClick = {
+                                showDeleteDialog = false
+                            }
+                        ) {
+                            Text(text = stringResource(id = R.string.cancel))
+                        }
+                    }
+                )
+            }
         }
     }
 }
+
+fun deleteMovement(movement: Movement) {
+    TODO("Not yet implemented")
+}
+
 
 fun loadMovements(): LiveData<List<Movement>> = liveData(Dispatchers.IO) {
     val db = MainApplication.database
