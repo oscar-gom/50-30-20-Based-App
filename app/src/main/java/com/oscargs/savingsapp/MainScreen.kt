@@ -1,6 +1,7 @@
 package com.oscargs.savingsapp
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,6 +55,7 @@ import com.oscargs.savingsapp.models.Movement
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
 import com.oscargs.savingsapp.utilities.Category
 import com.oscargs.savingsapp.utilities.MovementType
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
@@ -359,14 +361,15 @@ fun ItemDisplay(movement: Movement, onItemClick: (Int) -> Unit) {
                     )
             )
             FilledTonalButton(
-                modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
                 onClick = {
                     showDeleteDialog = true
                 }
             ) {
                 Icon(Icons.Filled.Delete, contentDescription = stringResource(id = R.string.deleteMovement))
             }
-
             if (showDeleteDialog) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
@@ -402,7 +405,9 @@ fun ItemDisplay(movement: Movement, onItemClick: (Int) -> Unit) {
 }
 
 fun deleteMovement(movement: Movement) {
-    TODO("Not yet implemented")
+    CoroutineScope(Dispatchers.IO).launch {
+        MainApplication.database.movementDAO().deleteMovement(movement)
+    }
 }
 
 
