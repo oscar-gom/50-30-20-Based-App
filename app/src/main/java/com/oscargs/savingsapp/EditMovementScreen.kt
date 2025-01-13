@@ -103,7 +103,7 @@ fun EditMovementForm(id: Int) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(R.string.labelAddMovement)) },
+                title = { Text(text = stringResource(R.string.editMovement)) },
                 actions = {
                     FilledTonalButton(
                         modifier = Modifier.padding(16.dp),
@@ -121,13 +121,13 @@ fun EditMovementForm(id: Int) {
                             CoroutineScope(Dispatchers.IO).launch {
                                 db.movementDAO().addMovement(
                                     Movement(
-                                        id = 0,
+                                        id = movement.id,
                                         amount = amount.toDouble(),
                                         description = text,
                                         date = pickedDate,
                                         type = selectedType,
                                         category = selectedCategory,
-                                        creationTime = LocalDateTime.now(),
+                                        creationTime = movement.creationTime,
                                         modificationTime = LocalDateTime.now(),
                                     )
                                 )

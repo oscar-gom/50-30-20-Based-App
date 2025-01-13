@@ -31,4 +31,5 @@
     <string name="savings">Savings</string>
     <string name="totalIncome">Total Income:‏‏‎ ‎</string>
     <string name="totalSpendings">"Total Spending's:‏‏‎ ‎"</string>
+    <string name="editMovement">Edit Movement</string>
 </resources>
