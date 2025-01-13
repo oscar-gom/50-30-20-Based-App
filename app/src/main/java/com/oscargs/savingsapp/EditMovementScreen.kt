@@ -1,5 +1,8 @@
 package com.oscargs.savingsapp
 
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,10 +24,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.liveData
 import com.oscargs.savingsapp.models.Movement
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
 import com.oscargs.savingsapp.utilities.Category
@@ -34,29 +40,36 @@ import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-val db = MainApplication.database
-
 @Composable
-fun AddMovementScreen() {
+fun EditMovementScreen(id: Int) {
     SavingsAppTheme {
-        MovementForm()
+        EditMovementForm(id = id)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovementForm() {
+fun EditMovementForm(id: Int) {
+    // Database
+    val db = MainApplication.database
+
+    // Obtén los datos del movimiento
+    val movement: Movement = getMovement(id = id)
+
     // Text variables
-    var text by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(movement.description) }
+    var amount by remember { mutableStateOf(movement.amount.toString()) }
 
     // Date
-    var pickedDate by remember { mutableStateOf(LocalDate.now()) }
+    var pickedDate by remember { mutableStateOf(movement.date) }
     val formattedDate by remember {
         derivedStateOf {
             DateTimeFormatter.ofPattern("dd-MM-yyyy").format(pickedDate)
@@ -65,11 +78,11 @@ fun MovementForm() {
 
     // Type
     var expandedType by remember { mutableStateOf(false) }
-    var selectedType by remember { mutableStateOf(MovementType.NONE) }
+    var selectedType by remember { mutableStateOf(movement.type) }
 
     // Category
     var expandedCategory by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf(Category.NONE) }
+    var selectedCategory by remember { mutableStateOf(movement.category) }
 
     // Errors
     var descriptionError by remember { mutableStateOf(false) }
@@ -82,39 +95,48 @@ fun MovementForm() {
         selectedCategory = Category.NONE
     }
 
+    // Update states when movement changes
+    LaunchedEffect(movement) {
+        text = movement.description
+        amount = movement.amount.toString()
+        pickedDate = movement.date
+        selectedType = movement.type
+        selectedCategory = movement.category
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(R.string.labelAddMovement)) },
+                title = { Text(text = stringResource(R.string.editMovement)) },
                 actions = {
                     FilledTonalButton(
                         modifier = Modifier.padding(16.dp),
                         onClick = {
-                        // Error handling
-                        descriptionError = text.isEmpty()
-                        amountError = amount.isEmpty()
-                        typeError = selectedType == MovementType.NONE
-                        categoryError = selectedCategory == Category.NONE
+                            // Error handling
+                            descriptionError = text.isEmpty()
+                            amountError = amount.isEmpty()
+                            typeError = selectedType == MovementType.NONE
+                            categoryError = selectedCategory == Category.NONE
 
-                        if (descriptionError || amountError || typeError || categoryError) {
-                            return@FilledTonalButton
-                        }
+                            if (descriptionError || amountError || typeError || categoryError) {
+                                return@FilledTonalButton
+                            }
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            db.movementDAO().addMovement(
-                                Movement(
-                                    id = 0,
-                                    amount = amount.toDouble(),
-                                    description = text,
-                                    date = pickedDate,
-                                    type = selectedType,
-                                    category = selectedCategory,
-                                    creationTime = LocalDateTime.now(),
-                                    modificationTime = LocalDateTime.now(),
+                            CoroutineScope(Dispatchers.IO).launch {
+                                db.movementDAO().addMovement(
+                                    Movement(
+                                        id = movement.id,
+                                        amount = amount.toDouble(),
+                                        description = text,
+                                        date = pickedDate,
+                                        type = selectedType,
+                                        category = selectedCategory,
+                                        creationTime = movement.creationTime,
+                                        modificationTime = LocalDateTime.now(),
+                                    )
                                 )
-                            )
-                        }
-                    }) {
+                            }
+                        }) {
                         Text(text = stringResource(R.string.save))
                     }
                 }
@@ -181,7 +203,6 @@ fun MovementForm() {
                     pickedDate = it
                 }
             }
-
             // Type Selector
             ExposedDropdownMenuBox(
                 expanded = expandedType,
@@ -345,11 +366,22 @@ fun MovementForm() {
     }
 }
 
+fun getMovement(id: Int): Movement {
+    val db = MainApplication.database
+    var movement: Movement? = null
+    runBlocking {
+        movement = withContext(Dispatchers.IO) {
+            db.movementDAO().getMovementById(id)
+        }
+    }
+    return movement ?: throw IllegalStateException("Movement not found")
+}
+
 
 @Preview(showBackground = true)
 @Composable
-fun AddMovementScreenPreview() {
+fun EditMovementScreenPreview() {
     SavingsAppTheme {
-        MovementForm()
+        EditMovementScreen(id = 0)
     }
 }

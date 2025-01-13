@@ -1,7 +1,9 @@
 package com.oscargs.savingsapp
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,10 +18,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -49,6 +55,7 @@ import com.oscargs.savingsapp.models.Movement
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
 import com.oscargs.savingsapp.utilities.Category
 import com.oscargs.savingsapp.utilities.MovementType
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
@@ -58,10 +65,13 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(modifier: Modifier) {
-    // Bottom sheet
-    val sheetState = rememberModalBottomSheetState()
+    // Bottom sheet states
+    val addSheetState = rememberModalBottomSheetState()
+    val editSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var showAddBottomSheet by remember { mutableStateOf(false) }
+    var showEditBottomSheet by remember { mutableStateOf(false) }
+    var selectedMovementId by remember { mutableStateOf<Int?>(null) }
 
     // DB
     val movements: LiveData<List<Movement>> = loadMovements()
@@ -75,6 +85,8 @@ fun MainScreen(modifier: Modifier) {
     var isErrorNecessary by remember { mutableStateOf(false) }
     var isErrorUnnecessary by remember { mutableStateOf(false) }
     var isErrorSavings by remember { mutableStateOf(false) }
+
+
 
     for (movement in movementList) {
         when (movement.category) {
@@ -107,7 +119,7 @@ fun MainScreen(modifier: Modifier) {
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 scope.launch {
-                    showBottomSheet = true
+                    showAddBottomSheet = true
                 }
             }) {
                 Icon(Icons.Filled.Add, contentDescription = "Add movement button")
@@ -215,18 +227,37 @@ fun MainScreen(modifier: Modifier) {
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
 
             // Movement list
-            MovementList(modifier = Modifier.padding(8.dp), movements = movementList)
+            MovementList(
+                modifier = Modifier.padding(8.dp),
+                movements = movementList,
+                onItemClick = { movementId ->
+                    scope.launch {
+                        selectedMovementId = movementId
+                        showEditBottomSheet = true
+                    }
+                }
+            )
         }
 
-
-        // Bottom sheet
-        if (showBottomSheet) {
+        // Add Bottom sheet
+        if (showAddBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = {
-                    showBottomSheet = false
-                }, sheetState = sheetState, modifier = Modifier.padding(innerPadding)
+                    showAddBottomSheet = false
+                }, sheetState = addSheetState, modifier = Modifier.padding(innerPadding)
             ) {
                 AddMovementScreen()
+            }
+        }
+
+        // Edit Bottom sheet
+        if (showEditBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showEditBottomSheet = false
+                }, sheetState = editSheetState, modifier = Modifier.padding(innerPadding)
+            ) {
+                EditMovementScreen(id = selectedMovementId!!)
             }
         }
     }
@@ -234,16 +265,17 @@ fun MainScreen(modifier: Modifier) {
 
 
 @Composable
-fun MovementList(modifier: Modifier, movements: List<Movement>) {
+fun MovementList(modifier: Modifier, movements: List<Movement>, onItemClick: (Int) -> Unit) {
     LazyColumn(modifier = modifier) {
         items(movements) { movement ->
-            ItemDisplay(movement)
+            ItemDisplay(movement, onItemClick)
         }
     }
 }
 
 @Composable
-fun ItemDisplay(movement: Movement) {
+fun ItemDisplay(movement: Movement, onItemClick: (Int) -> Unit) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -252,6 +284,7 @@ fun ItemDisplay(movement: Movement) {
                 MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(8.dp)
             )
             .padding(16.dp)
+            .clickable { onItemClick(movement.id) }
     ) {
         Column {
             Row {
@@ -327,9 +360,56 @@ fun ItemDisplay(movement: Movement) {
                         }
                     )
             )
+            FilledTonalButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
+                onClick = {
+                    showDeleteDialog = true
+                }
+            ) {
+                Icon(Icons.Filled.Delete, contentDescription = stringResource(id = R.string.deleteMovement))
+            }
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = {
+                        Text(text = stringResource(id = R.string.deleteMovement))
+                    },
+                    text = {
+                        Text(text = stringResource(id = R.string.deleteMovementConfirmation))
+                    },
+                    confirmButton = {
+                        FilledTonalButton(
+                            onClick = {
+                                deleteMovement(movement)
+                                showDeleteDialog = false
+                            }
+                        ) {
+                            Text(text = stringResource(id = R.string.delete))
+                        }
+                    },
+                    dismissButton = {
+                        FilledTonalButton(
+                            onClick = {
+                                showDeleteDialog = false
+                            }
+                        ) {
+                            Text(text = stringResource(id = R.string.cancel))
+                        }
+                    }
+                )
+            }
         }
     }
 }
+
+fun deleteMovement(movement: Movement) {
+    CoroutineScope(Dispatchers.IO).launch {
+        MainApplication.database.movementDAO().deleteMovement(movement)
+    }
+}
+
 
 fun loadMovements(): LiveData<List<Movement>> = liveData(Dispatchers.IO) {
     val db = MainApplication.database

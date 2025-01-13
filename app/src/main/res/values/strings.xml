@@ -31,4 +31,9 @@
     <string name="savings">Savings</string>
     <string name="totalIncome">Total Income:‏‏‎ ‎</string>
     <string name="totalSpendings">"Total Spending's:‏‏‎ ‎"</string>
+    <string name="editMovement">Edit Movement</string>
+    <string name="deleteMovement">Delete Movement</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="deleteMovementConfirmation">If you delete this movement you won\'t be able to recover it.\nAre you sure you want to delete it?</string>
 </resources>
