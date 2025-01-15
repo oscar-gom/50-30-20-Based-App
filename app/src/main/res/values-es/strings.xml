@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">UltraSavings</string>
+    <string name="labelDescriptionTF">Descripción</string>
+    <string name="hintDescriptionTF">Añade tu descripción</string>
+    <string name="labelAmountTF">Monto</string>
+    <string name="hintAmountTF">Añade tu monto</string>
+    <string name="labelDateTF">Selecciona fecha</string>
+    <string name="labelAccept">Vale</string>
+    <string name="labelCancel">Cancelar</string>
+    <string name="labelSelectDate">Selecciona fecha</string>
+    <string name="labelIncome">Ingreso</string>
+    <string name="labelExpense">Gasto</string>
+    <string name="categoryFood">Comida</string>
+    <string name="categoryTransportation">Transporte</string>
+    <string name="categoryBills">Facturas</string>
+    <string name="categoryEntertainment">Entretenimiento</string>
+    <string name="categoryHealth">Salud</string>
+    <string name="categoryShopping">Compras</string>
+    <string name="categoryRent">Alquiler</string>
+    <string name="categoryOtherExpenses">Otros Gastos</string>
+    <string name="categorySalary">Salario</string>
+    <string name="categoryCapitalGains">Ganancias Capitales</string>
+    <string name="categoryOtherIncomes">Otros Ingresos</string>
+    <string name="categoryNone">Selecciona una Categoría</string>
+    <string name="typeNone">Selecciona un Tipo</string>
+    <string name="labelAddMovement">Añade movimiento</string>
+    <string name="save">Guardar</string>
+    <string name="errorEmptyFields">ERROR: ¡No dejes campos vacíos!</string>
+    <string name="necessary">Necesario</string>
+    <string name="unnecessary">Innecesario</string>
+    <string name="savings">Ahorros</string>
+    <string name="totalIncome">"Ingresos Totales: "</string>
+    <string name="totalSpendings">"Gastos Totales: "</string>
+    <string name="editMovement">Editar Movimiento</string>
+    <string name="deleteMovement">Borrar Movimiento</string>
+    <string name="cancel">Cancelar</string>
+    <string name="delete">Borrar</string>
+    <string name="deleteMovementConfirmation">Si borras este movimiento no podrás recuperarlo. ¿Estás seguro de que quieres borrarlo?</string>
+</resources>

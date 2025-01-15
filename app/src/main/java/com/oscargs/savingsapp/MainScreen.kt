@@ -1,7 +1,6 @@
 package com.oscargs.savingsapp
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -33,8 +34,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,8 +50,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.liveData
 import com.oscargs.savingsapp.models.Movement
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
 import com.oscargs.savingsapp.utilities.Category
@@ -58,6 +57,7 @@ import com.oscargs.savingsapp.utilities.MovementType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 
@@ -73,9 +73,18 @@ fun MainScreen(modifier: Modifier) {
     var showEditBottomSheet by remember { mutableStateOf(false) }
     var selectedMovementId by remember { mutableStateOf<Int?>(null) }
 
-    // DB
-    val movements: LiveData<List<Movement>> = loadMovements()
-    val movementList by movements.observeAsState(initial = emptyList())
+    // Current month
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+
+    // Movements state
+    var movementList by remember { mutableStateOf<List<Movement>>(emptyList()) }
+
+    // Load initial movements
+    LaunchedEffect(currentMonth) {
+        updateMovements(currentMonth) { updatedMovements ->
+            movementList = updatedMovements
+        }
+    }
 
     // Values for the top bar
     var totalNecessary = 0.0
@@ -85,8 +94,6 @@ fun MainScreen(modifier: Modifier) {
     var isErrorNecessary by remember { mutableStateOf(false) }
     var isErrorUnnecessary by remember { mutableStateOf(false) }
     var isErrorSavings by remember { mutableStateOf(false) }
-
-
 
     for (movement in movementList) {
         when (movement.category) {
@@ -105,7 +112,6 @@ fun MainScreen(modifier: Modifier) {
             Category.NONE -> {}
         }
     }
-
 
     Scaffold(
         modifier = modifier,
@@ -226,17 +232,45 @@ fun MainScreen(modifier: Modifier) {
             }
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
 
+            // Month selector
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = {
+                    currentMonth = currentMonth.minusMonths(1)
+                    updateMovements(currentMonth) { updatedMovements ->
+                        movementList = updatedMovements
+                    }
+                }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
+                }
+
+                Text(text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.clickable { currentMonth = YearMonth.now() })
+                IconButton(onClick = {
+                    currentMonth = currentMonth.plusMonths(1)
+                    updateMovements(currentMonth) { updatedMovements ->
+                        movementList = updatedMovements
+                    }
+                }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
+                }
+            }
+
             // Movement list
-            MovementList(
-                modifier = Modifier.padding(8.dp),
+            MovementList(modifier = Modifier.padding(8.dp),
                 movements = movementList,
                 onItemClick = { movementId ->
                     scope.launch {
                         selectedMovementId = movementId
                         showEditBottomSheet = true
                     }
-                }
-            )
+                })
         }
 
         // Add Bottom sheet
@@ -276,16 +310,14 @@ fun MovementList(modifier: Modifier, movements: List<Movement>, onItemClick: (In
 @Composable
 fun ItemDisplay(movement: Movement, onItemClick: (Int) -> Unit) {
     var showDeleteDialog by remember { mutableStateOf(false) }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .background(
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(8.dp)
-            )
-            .padding(16.dp)
-            .clickable { onItemClick(movement.id) }
-    ) {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp)
+        .background(
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(8.dp)
+        )
+        .padding(16.dp)
+        .clickable { onItemClick(movement.id) }) {
         Column {
             Row {
                 Text(
@@ -360,45 +392,35 @@ fun ItemDisplay(movement: Movement, onItemClick: (Int) -> Unit) {
                         }
                     )
             )
-            FilledTonalButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally),
-                onClick = {
-                    showDeleteDialog = true
-                }
-            ) {
-                Icon(Icons.Filled.Delete, contentDescription = stringResource(id = R.string.deleteMovement))
+            FilledTonalButton(modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally), onClick = {
+                showDeleteDialog = true
+            }) {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = stringResource(id = R.string.deleteMovement)
+                )
             }
             if (showDeleteDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDeleteDialog = false },
-                    title = {
-                        Text(text = stringResource(id = R.string.deleteMovement))
-                    },
-                    text = {
-                        Text(text = stringResource(id = R.string.deleteMovementConfirmation))
-                    },
-                    confirmButton = {
-                        FilledTonalButton(
-                            onClick = {
-                                deleteMovement(movement)
-                                showDeleteDialog = false
-                            }
-                        ) {
-                            Text(text = stringResource(id = R.string.delete))
-                        }
-                    },
-                    dismissButton = {
-                        FilledTonalButton(
-                            onClick = {
-                                showDeleteDialog = false
-                            }
-                        ) {
-                            Text(text = stringResource(id = R.string.cancel))
-                        }
+                AlertDialog(onDismissRequest = { showDeleteDialog = false }, title = {
+                    Text(text = stringResource(id = R.string.deleteMovement))
+                }, text = {
+                    Text(text = stringResource(id = R.string.deleteMovementConfirmation))
+                }, confirmButton = {
+                    FilledTonalButton(onClick = {
+                        deleteMovement(movement)
+                        showDeleteDialog = false
+                    }) {
+                        Text(text = stringResource(id = R.string.delete))
                     }
-                )
+                }, dismissButton = {
+                    FilledTonalButton(onClick = {
+                        showDeleteDialog = false
+                    }) {
+                        Text(text = stringResource(id = R.string.cancel))
+                    }
+                })
             }
         }
     }
@@ -411,10 +433,14 @@ fun deleteMovement(movement: Movement) {
 }
 
 
-fun loadMovements(): LiveData<List<Movement>> = liveData(Dispatchers.IO) {
+fun updateMovements(date: YearMonth, onUpdate: (List<Movement>) -> Unit) {
     val db = MainApplication.database
-    val movements = db.movementDAO().getAllMovements()
-    emitSource(movements)
+    val movements = db.movementDAO().getMovementByMonthYear(
+        date.monthValue.toString().padStart(2, '0'), date.year.toString()
+    )
+    movements.observeForever { updatedMovements ->
+        onUpdate(updatedMovements)
+    }
 }
 
 @Preview(showBackground = true)
