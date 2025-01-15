@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SmartSavings</string>
+    <string name="app_name">UltraSavings</string>
     <string name="labelDescriptionTF">Descripción</string>
     <string name="hintDescriptionTF">Añade tu descripción</string>
     <string name="labelAmountTF">Monto</string>

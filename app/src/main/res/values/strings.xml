@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SmartSavings</string>
+    <string name="app_name">UltraSavings</string>
     <string name="labelDescriptionTF">Description</string>
     <string name="hintDescriptionTF">Add your description</string>
     <string name="labelAmountTF">Amount</string>
