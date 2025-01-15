@@ -35,5 +35,5 @@
     <string name="deleteMovement">Delete Movement</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
-    <string name="deleteMovementConfirmation">If you delete this movement you won\'t be able to recover it.\nAre you sure you want to delete it?</string>
+    <string name="deleteMovementConfirmation">If you delete this movement you won\'t be able to recover it. Are you sure you want to delete it?</string>
 </resources>
