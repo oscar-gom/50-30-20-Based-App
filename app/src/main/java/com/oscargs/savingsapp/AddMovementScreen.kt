@@ -44,13 +44,13 @@ val db = MainApplication.database
 @Composable
 fun AddMovementScreen() {
     SavingsAppTheme {
-        MovementForm()
+        AddMovementForm()
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovementForm() {
+fun AddMovementForm() {
     // Text variables
     var text by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
@@ -91,32 +91,43 @@ fun MovementForm() {
                         modifier = Modifier.padding(16.dp),
                         onClick = {
                         // Error handling
-                        descriptionError = text.isEmpty()
-                        amountError = amount.isEmpty()
-                        typeError = selectedType == MovementType.NONE
-                        categoryError = selectedCategory == Category.NONE
+                            descriptionError = text.isEmpty()
+                            amountError = amount.isEmpty()
+                            typeError = selectedType == MovementType.NONE
+                            categoryError = selectedCategory == Category.NONE
 
-                        if (descriptionError || amountError || typeError || categoryError) {
-                            return@FilledTonalButton
-                        }
+                            if (descriptionError || amountError || typeError || categoryError) {
+                                return@FilledTonalButton
+                            }
+                            val amountDouble = amount.toDouble()
+                            val description = text
+                            val date = pickedDate
+                            val type = selectedType
+                            val category = selectedCategory
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            db.movementDAO().addMovement(
-                                Movement(
-                                    id = 0,
-                                    amount = amount.toDouble(),
-                                    description = text,
-                                    date = pickedDate,
-                                    type = selectedType,
-                                    category = selectedCategory,
-                                    creationTime = LocalDateTime.now(),
-                                    modificationTime = LocalDateTime.now(),
+                            CoroutineScope(Dispatchers.IO).launch {
+                                db.movementDAO().addMovement(
+                                    Movement(
+                                        id = 0,
+                                        amount = amountDouble,
+                                        description = description,
+                                        date = date,
+                                        type = type,
+                                        category = category,
+                                        creationTime = LocalDateTime.now(),
+                                        modificationTime = LocalDateTime.now(),
+                                    )
                                 )
-                            )
-                        }
+                            }
+                                text = ""
+                                amount = ""
+                                selectedType = MovementType.NONE
+                                selectedCategory = Category.NONE
+                                pickedDate = LocalDate.now()
                     }) {
                         Text(text = stringResource(R.string.save))
                     }
+
                 }
             )
         }
@@ -350,6 +361,6 @@ fun MovementForm() {
 @Composable
 fun AddMovementScreenPreview() {
     SavingsAppTheme {
-        MovementForm()
+        AddMovementForm()
     }
 }
