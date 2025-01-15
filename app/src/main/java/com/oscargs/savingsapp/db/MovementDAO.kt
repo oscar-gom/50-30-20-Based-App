@@ -26,6 +26,9 @@ interface MovementDAO {
     @Query("SELECT * FROM Movement WHERE date = :date")
     fun getMovementsByDate(date: String): LiveData<List<Movement>>
 
+    @Query("SELECT * FROM Movement WHERE strftime('%m', date) = :month AND strftime('%Y', date) = :year")
+    fun getMovementByMonthYear(month: String, year: String): LiveData<List<Movement>>
+
     @Upsert
     fun addMovement(movement: Movement)
 

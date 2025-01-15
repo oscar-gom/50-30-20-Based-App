@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,6 +60,7 @@ import com.oscargs.savingsapp.utilities.MovementType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 
@@ -74,7 +77,7 @@ fun MainScreen(modifier: Modifier) {
     var selectedMovementId by remember { mutableStateOf<Int?>(null) }
 
     // DB
-    val movements: LiveData<List<Movement>> = loadMovements()
+    val movements: LiveData<List<Movement>> = loadMovements(YearMonth.now())
     val movementList by movements.observeAsState(initial = emptyList())
 
     // Values for the top bar
@@ -225,6 +228,38 @@ fun MainScreen(modifier: Modifier) {
                 )
             }
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+
+            // Month selector
+            var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        currentMonth = currentMonth.minusMonths(1)
+                        loadMovements(currentMonth)
+                    }
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Previous Month")
+                }
+                Text(
+                    text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                IconButton(
+                    onClick = {
+                        currentMonth = currentMonth.plusMonths(1)
+                        loadMovements(currentMonth)
+                    }
+                ) {
+                    Icon(Icons.Default.ArrowForward, contentDescription = "Next Month")
+                }
+            }
 
             // Movement list
             MovementList(
@@ -411,9 +446,12 @@ fun deleteMovement(movement: Movement) {
 }
 
 
-fun loadMovements(): LiveData<List<Movement>> = liveData(Dispatchers.IO) {
+fun loadMovements(date: YearMonth): LiveData<List<Movement>> = liveData(Dispatchers.IO) {
     val db = MainApplication.database
-    val movements = db.movementDAO().getAllMovements()
+    val movements = db.movementDAO().getMovementByMonthYear(
+        date.monthValue.toString(),
+        date.year.toString()
+    )
     emitSource(movements)
 }
 
