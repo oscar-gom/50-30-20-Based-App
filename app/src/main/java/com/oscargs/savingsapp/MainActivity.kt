@@ -22,17 +22,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SavingsAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    //MainScreen(modifier = Modifier.padding(innerPadding))
-                    Column (modifier = Modifier.padding(innerPadding)) {
-                        Button(
-                            onClick = {
-                                // Handle button click
-                                throw RuntimeException("This is a crash")
-                        }) {
-                            Text(text = "Click me")
-                        }
-
-                    }
+                    MainScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
