@@ -82,60 +82,56 @@ fun AddMovementForm() {
         selectedCategory = Category.NONE
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.labelAddMovement)) },
-                actions = {
-                    FilledTonalButton(
-                        modifier = Modifier.padding(16.dp),
-                        onClick = {
-                        // Error handling
-                            descriptionError = text.isEmpty()
-                            amountError = amount.isEmpty()
-                            typeError = selectedType == MovementType.NONE
-                            categoryError = selectedCategory == Category.NONE
+    Scaffold(topBar = {
+        TopAppBar(title = { Text(text = stringResource(R.string.labelAddMovement)) },
+            actions = {
+                FilledTonalButton(modifier = Modifier.padding(16.dp), onClick = {
+                    // Error handling
+                    descriptionError = text.isEmpty()
+                    amountError = amount.isEmpty()
+                    typeError = selectedType == MovementType.NONE
+                    categoryError = selectedCategory == Category.NONE
 
-                            if (descriptionError || amountError || typeError || categoryError) {
-                                return@FilledTonalButton
-                            }
-                            val amountDouble = amount.toDouble()
-                            val description = text
-                            val date = pickedDate
-                            val type = selectedType
-                            val category = selectedCategory
-
-                            CoroutineScope(Dispatchers.IO).launch {
-                                db.movementDAO().addMovement(
-                                    Movement(
-                                        id = 0,
-                                        amount = amountDouble,
-                                        description = description,
-                                        date = date,
-                                        type = type,
-                                        category = category,
-                                        creationTime = LocalDateTime.now(),
-                                        modificationTime = LocalDateTime.now(),
-                                    )
-                                )
-                            }
-                                text = ""
-                                amount = ""
-                                selectedType = MovementType.NONE
-                                selectedCategory = Category.NONE
-                                pickedDate = LocalDate.now()
-                    }) {
-                        Text(text = stringResource(R.string.save))
+                    if (descriptionError || amountError || typeError || categoryError) {
+                        return@FilledTonalButton
                     }
+                    val amountDouble = amount.toDouble()
+                    val description = text
+                    val date = pickedDate
+                    val type = selectedType
+                    val category = selectedCategory
 
+                    CoroutineScope(Dispatchers.IO).launch {
+                        db.movementDAO().addMovement(
+                            Movement(
+                                id = 0,
+                                amount = amountDouble,
+                                description = description,
+                                date = date,
+                                type = type,
+                                category = category,
+                                creationTime = LocalDateTime.now(),
+                                modificationTime = LocalDateTime.now(),
+                            )
+                        )
+                    }
+                    text = ""
+                    amount = ""
+                    selectedType = MovementType.NONE
+                    selectedCategory = Category.NONE
+                    pickedDate = LocalDate.now()
+                }) {
+                    Text(text = stringResource(R.string.save))
                 }
-            )
-        }
-    ) { innerPadding ->
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(innerPadding)
-            .padding(8.dp)) {
+
+            })
+    }) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(innerPadding)
+                .padding(8.dp)
+        ) {
 
             // Description text field
             TextField(
@@ -178,13 +174,10 @@ fun AddMovementForm() {
             }
             Text(modifier = Modifier.padding(8.dp), text = formattedDate)
 
-            MaterialDialog(
-                dialogState = dateDialogState,
-                buttons = {
-                    positiveButton(stringResource(R.string.labelAccept))
-                    negativeButton(stringResource(R.string.labelCancel))
-                }
-            ) {
+            MaterialDialog(dialogState = dateDialogState, buttons = {
+                positiveButton(stringResource(R.string.labelAccept))
+                negativeButton(stringResource(R.string.labelCancel))
+            }) {
                 datepicker(
                     initialDate = pickedDate ?: LocalDate.now(),
                     title = R.string.labelSelectDate.toString(),
@@ -201,12 +194,13 @@ fun AddMovementForm() {
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {
-                TextField(
-                    value = stringResource(id = when (selectedType) {
+                TextField(value = stringResource(
+                    id = when (selectedType) {
                         MovementType.INCOME -> R.string.labelIncome
                         MovementType.EXPENSE -> R.string.labelExpense
                         MovementType.NONE -> R.string.typeNone
-                    }),
+                    }
+                ),
                     onValueChange = {},
                     readOnly = true,
                     isError = typeError,
@@ -219,18 +213,14 @@ fun AddMovementForm() {
                         .menuAnchor()
                 )
 
-                ExposedDropdownMenu(
-                    expanded = expandedType,
-                    onDismissRequest = { expandedType = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.labelIncome)) },
+                ExposedDropdownMenu(expanded = expandedType,
+                    onDismissRequest = { expandedType = false }) {
+                    DropdownMenuItem(text = { Text(stringResource(R.string.labelIncome)) },
                         onClick = {
                             selectedType = MovementType.INCOME
                             expandedType = false
                         })
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.labelExpense)) },
+                    DropdownMenuItem(text = { Text(stringResource(R.string.labelExpense)) },
                         onClick = {
                             selectedType = MovementType.EXPENSE
                             expandedType = false
@@ -247,8 +237,8 @@ fun AddMovementForm() {
                     .padding(8.dp)
                     .padding(bottom = 32.dp)
             ) {
-                TextField(
-                    value = stringResource(id = when (selectedCategory) {
+                TextField(value = stringResource(
+                    id = when (selectedCategory) {
                         Category.FOOD -> R.string.categoryFood
                         Category.TRANSPORTATION -> R.string.categoryTransportation
                         Category.BILLS -> R.string.categoryBills
@@ -261,7 +251,8 @@ fun AddMovementForm() {
                         Category.CAPITAL_GAINS -> R.string.categoryCapitalGains
                         Category.OTHER_INCOMES -> R.string.categoryOtherIncomes
                         Category.NONE -> R.string.categoryNone
-                    }),
+                    }
+                ),
                     onValueChange = {},
                     readOnly = true,
                     isError = categoryError,
@@ -274,56 +265,46 @@ fun AddMovementForm() {
                         .menuAnchor()
                 )
 
-                ExposedDropdownMenu(
-                    expanded = expandedCategory,
-                    onDismissRequest = { expandedCategory = false }
-                ) {
+                ExposedDropdownMenu(expanded = expandedCategory,
+                    onDismissRequest = { expandedCategory = false }) {
                     // Expenses
                     if (selectedType == MovementType.EXPENSE) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryFood)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryFood)) },
                             onClick = {
                                 selectedCategory = Category.FOOD
                                 expandedCategory = false
                             })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryTransportation)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryTransportation)) },
                             onClick = {
                                 selectedCategory = Category.TRANSPORTATION
                                 expandedCategory = false
                             })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryBills)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryBills)) },
                             onClick = {
                                 selectedCategory = Category.BILLS
                                 expandedCategory = false
                             })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryEntertainment)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryEntertainment)) },
                             onClick = {
                                 selectedCategory = Category.ENTERTAINMENT
                                 expandedCategory = false
                             })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryHealth)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryHealth)) },
                             onClick = {
                                 selectedCategory = Category.HEALTH
                                 expandedCategory = false
                             })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryShopping)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryShopping)) },
                             onClick = {
                                 selectedCategory = Category.SHOPPING
                                 expandedCategory = false
                             })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryRent)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryRent)) },
                             onClick = {
                                 selectedCategory = Category.RENT
                                 expandedCategory = false
                             })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryOtherExpenses)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryOtherExpenses)) },
                             onClick = {
                                 selectedCategory = Category.OTHER_EXPENSES
                                 expandedCategory = false
@@ -331,20 +312,17 @@ fun AddMovementForm() {
                     }
                     // Incomes
                     else {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categorySalary)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categorySalary)) },
                             onClick = {
                                 selectedCategory = Category.SALARY
                                 expandedCategory = false
                             })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryCapitalGains)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryCapitalGains)) },
                             onClick = {
                                 selectedCategory = Category.CAPITAL_GAINS
                                 expandedCategory = false
                             })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.categoryOtherIncomes)) },
+                        DropdownMenuItem(text = { Text(stringResource(R.string.categoryOtherIncomes)) },
                             onClick = {
                                 selectedCategory = Category.OTHER_INCOMES
                                 expandedCategory = false
