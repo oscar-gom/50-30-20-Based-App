@@ -1,7 +1,6 @@
 package com.oscargs.savingsapp
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,8 +34,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,8 +50,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.liveData
 import com.oscargs.savingsapp.models.Movement
 import com.oscargs.savingsapp.ui.theme.SavingsAppTheme
 import com.oscargs.savingsapp.utilities.Category
@@ -76,9 +73,18 @@ fun MainScreen(modifier: Modifier) {
     var showEditBottomSheet by remember { mutableStateOf(false) }
     var selectedMovementId by remember { mutableStateOf<Int?>(null) }
 
-    // DB
-    val movements: LiveData<List<Movement>> = loadMovements(YearMonth.now())
-    val movementList by movements.observeAsState(initial = emptyList())
+    // Current month
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+
+    // Movements state
+    var movementList by remember { mutableStateOf<List<Movement>>(emptyList()) }
+
+    // Load initial movements
+    LaunchedEffect(currentMonth) {
+        updateMovements(currentMonth) { updatedMovements ->
+            movementList = updatedMovements
+        }
+    }
 
     // Values for the top bar
     var totalNecessary = 0.0
@@ -88,8 +94,6 @@ fun MainScreen(modifier: Modifier) {
     var isErrorNecessary by remember { mutableStateOf(false) }
     var isErrorUnnecessary by remember { mutableStateOf(false) }
     var isErrorSavings by remember { mutableStateOf(false) }
-
-
 
     for (movement in movementList) {
         when (movement.category) {
@@ -108,7 +112,6 @@ fun MainScreen(modifier: Modifier) {
             Category.NONE -> {}
         }
     }
-
 
     Scaffold(
         modifier = modifier,
@@ -230,8 +233,6 @@ fun MainScreen(modifier: Modifier) {
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
 
             // Month selector
-            var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -242,7 +243,9 @@ fun MainScreen(modifier: Modifier) {
                 IconButton(
                     onClick = {
                         currentMonth = currentMonth.minusMonths(1)
-                        loadMovements(currentMonth)
+                        updateMovements(currentMonth) { updatedMovements ->
+                            movementList = updatedMovements
+                        }
                     }
                 ) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Previous Month")
@@ -254,7 +257,9 @@ fun MainScreen(modifier: Modifier) {
                 IconButton(
                     onClick = {
                         currentMonth = currentMonth.plusMonths(1)
-                        loadMovements(currentMonth)
+                        updateMovements(currentMonth) { updatedMovements ->
+                            movementList = updatedMovements
+                        }
                     }
                 ) {
                     Icon(Icons.Default.ArrowForward, contentDescription = "Next Month")
@@ -446,13 +451,15 @@ fun deleteMovement(movement: Movement) {
 }
 
 
-fun loadMovements(date: YearMonth): LiveData<List<Movement>> = liveData(Dispatchers.IO) {
+fun updateMovements(date: YearMonth, onUpdate: (List<Movement>) -> Unit) {
     val db = MainApplication.database
     val movements = db.movementDAO().getMovementByMonthYear(
-        date.monthValue.toString(),
+        date.monthValue.toString().padStart(2, '0'),
         date.year.toString()
     )
-    emitSource(movements)
+    movements.observeForever { updatedMovements ->
+        onUpdate(updatedMovements)
+    }
 }
 
 @Preview(showBackground = true)
