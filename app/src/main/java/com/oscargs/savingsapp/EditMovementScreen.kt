@@ -61,7 +61,7 @@ fun EditMovementForm(id: Int) {
     // Database
     val db = MainApplication.database
 
-    // Obtén los datos del movimiento
+    // Get DB Movement
     val movement: Movement = getMovement(id = id)
 
     // Text variables
