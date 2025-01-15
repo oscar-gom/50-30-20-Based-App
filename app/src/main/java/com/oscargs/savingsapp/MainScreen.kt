@@ -250,9 +250,11 @@ fun MainScreen(modifier: Modifier) {
                 ) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Previous Month")
                 }
+
                 Text(
                     text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.clickable { currentMonth = YearMonth.now() }
                 )
                 IconButton(
                     onClick = {
