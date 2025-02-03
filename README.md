@@ -1,10 +1,10 @@
 UltraSavings is a simple and minimalist budgeting app designed to help you manage your finances effortlessly using the proven 50-30-20 rule:
 
-50% for essential expenses (rent, bills, groceries)
+- 50% for essential expenses (rent, bills, groceries)
 
-30% for discretionary spending (entertainment, dining out)
+- 30% for discretionary spending (entertainment, dining out)
 
-20% for savings and financial goals
+- 20% for savings and financial goals
 
 With a clean and user-friendly interface, UltraSavings makes it easy to track your spending habits, stay organized, and build better money-saving habits over time. The app is designed for simplicity, allowing you to focus on what matters most—achieving your financial goals.
 
@@ -16,9 +16,11 @@ With a clean and user-friendly interface, UltraSavings makes it easy to track yo
 
 UltraSavings es una aplicación de presupuestos simple y minimalista diseñada para ayudarte a gestionar tus finanzas sin esfuerzo utilizando la comprobada regla 50-30-20:
 
-50% para gastos esenciales (alquiler, facturas, compras)
-30% para gastos discrecionales (entretenimiento, salir a comer)
-20% para ahorros y metas financieras
+- 50% para gastos esenciales (alquiler, facturas, compras)
+
+- 30% para gastos discrecionales (entretenimiento, salir a comer)
+
+- 20% para ahorros y metas financieras
 
 Con una interfaz limpia y fácil de usar, UltraSavings facilita el seguimiento de tus hábitos de gasto, te ayuda a mantenerte organizado y a desarrollar mejores hábitos de ahorro con el tiempo. La aplicación está diseñada para ser simple, permitiéndote enfocarte en lo que realmente importa: alcanzar tus objetivos financieros.
 
